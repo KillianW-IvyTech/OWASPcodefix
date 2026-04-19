@@ -33,3 +33,15 @@ Four vulnerabilities are fixed. First, following OWASP A03, NoSQL Injection is p
 
 #### [7.](InsecureDesign/example1)
 
+Four vulnerabilites are fixed. First, anyone can reset anyone's password. Just knowing the email is enough to lock someone out because there is nothing like a token, OTP, or confirmation link when reseting the password. This is fixed by generating a random token with `secrets.token_urlsafe()`, which is stored with a exiration and emailed to the address, so then only someone with access to the inbox can reset (Addresses OWASP A04). Second, any new password is stored directly in the database as a raw string with no hashing. Any potential leak or misconfigured query exposes each password in plain text. This is fixed by adding bcrypt hashing to the plaintext password before being written. Now even someone with full access only sees a irreversible hash (Addresses OWASP A02). Third, if a unknown email is entered, `.first()` returns `None`, then calling `user.password` on `None` raises a `AttributeError` which returns a 500 that can distinguish valid from invalid emails. This is fixed by making sure to return the same 200 response wheter a email exists or not. This prevents attackers from being able to probe which emails are registered (Addresses OWASP A05). The fourth vulnerability is no format check on any email or password. There is no length minimum or any complexity enforced either, weakening any account using this system. This is fixed by adding a check system that validates the format by rejecting any weak password or bad email before they are commited to the flow (Addresses OWASP A05).
+
+### Software and Data Integrity Failures
+
+#### [8.](SoftwareandDataIntegriyFailures/example1)
+
+Three vulnerabilites are fixed. Firstly following OWASP A08, there is no integrity hash, so if the cdn was compromised or the domain was hijacked, the browser fethces and executes the malicious script. This is fixed by adding the `integrity` attribute which contains a base-64 encoded SHA-384 hash of the file content, so if the file ever produced a different hash then the browser would not execute it. Secondly still following OWASP A08, there is no `crossorigin="anonymous"`, so the browser will fetch the script without CORS headers. SRI requires CORS headers, so even if you added a integrity hash later, the browser would silently skip the check on non-CORS responses. This is fixed by just adding and setting `crossorigin="anonymous"`, which forces the browser to make a CORS request and include those response headers in the integrity. Without this the `integrity` attribute doesn't do too much. Third, and also still following OWASP A08, `lib.js` has no version, so a major version could come out and automatically try to update, but instead break the code or change its behaviour. This is fixed by tying the exact version in the URL `(lib@2.4.1/lib.min.js)` to make sure the same file is always loaded. COmbined with SRI, both the version and content are verified each time the page is loaded.
+
+### Server-Side Request Forgery
+
+#### [9.](ServerSideRequestForgery/example1.py)
+
