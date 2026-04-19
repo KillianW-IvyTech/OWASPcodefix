@@ -45,3 +45,9 @@ Three vulnerabilites are fixed. Firstly following OWASP A08, there is no integri
 
 #### [9.](ServerSideRequestForgery/example1.py)
 
+Four vulnerabilites are fixed. First, following OWASP A10, the internal network is fully reachable, there is no validation and any URL is accepted. This is fixed by creating a allowlist of hostnames called `ALLOWED_HOSTS`, and if a host that is not on the list they are rejected, blocking critical endpoints. The second vulnerability, still following OWASP A10 is that `requests` supports multiple, non-HTTP schemes. A attacker supplying certain urls could read local files off the server, or reach services that don't speak HTTP at all, bypassing firewall rules. This is fixed by restricting to HTTPS only, which blocks other urls in one check and enforces encrypted transport. Third, there is no request timeout. `requests.get()` with no timeout waits indefinitely, which if there are too many requests, or a attacker points it at a slow/non-responsive host, they tie up until the server runs out of capacity and stop serving users entirely. This is fixed with `timeout=(5,10)` which set two seperate limits, 5 seconds to establish the connection, and 10 seconds to receive the body message. Either limit expiring creates a `Timeout` exception, freeing the thread (Addresses OWASP A05). The fourth and final vulnerability is that interal data is reflected directly to the caller with `print(response.text)`. If a internal endpoint is reached, its full response body, creds, tokens, etc. is printed in plain text. This is fixed by verifiying the HTTP status is a success beofre using a response, and maxing sure the output has a safe maximum length. This makes sure the blast radius is limited if the allowlist or scheme check ever fails (Addresses OWASP A05).
+
+### Identification and Authentication Failures
+
+#### [10.](IdentificationandAuthenticationFailures/example1.js)
+
