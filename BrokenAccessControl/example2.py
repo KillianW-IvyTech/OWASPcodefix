@@ -1,9 +1,7 @@
-'''
-@app.route('/account/<user_id>')
-def get_account(user_id):
-    user = db.query(User).filter_by(id=user_id).first()
-    return jsonify(user.to_dict())
-'''
+# @app.route('/account/<user_id>')
+# def get_account(user_id):
+#     user = db.query(User).filter_by(id=user_id).first()
+#     return jsonify(user.to_dict())
 from flask import jsonify, abort
 from flask_login import login_required, current_user
 

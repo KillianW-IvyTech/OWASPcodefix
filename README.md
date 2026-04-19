@@ -11,5 +11,19 @@ Four vulnerabilites are fixed. First, any caller, they don't have to be authenti
 
 ### Cryptographic Failures
 
-#### [3.](CryptographicFailures/example1)
+#### [3.](CryptographicFailures/example1.java)
+
+Four vulnerabilites are fixed in this example. First, following OWASP A02, MD5 is cryptographically dead, and has had known vulnerabilites since 2004. This is fixed by replacing it with a better algorithm, BCrypt, which is built for password hashing and automatically incorporates a salt. This leads to the second problem, which is that there is no unique salt per password, so a attacker can precompute a rainbow table once and get every password that appears in that table. This is fixed with BCrypt, which automatically generates a random 128-bit salt per call and embeds it in the output. A third vulnerability fixed by switching from MD5 to BCrypt is that there is now a work factor. A modern computer can compute billions of MD5 hashes a second, which makes brute forcing it easy, while the work parameter in `new BCryptPasswordEncoder(12)` makes brute forcing it infeasible. The fourth and final vulnerability is that the encoding is platform dependent. `getBytes()` uses the JVM's default encoding, which is usually OS dependent. Meaning if a user registered on one server, then tried to log in on another, they would get a hash mismatch even with the correct password (Addresses OWASP A05). The normal fix is specifying `StandardCharsets.UTF_8`, but like vuln #2 this is fixed automatically with BCrypt, which does UTF-8 interally.
+
+#### [4.](CryptographicFailures/example2.py)
+
+There are four vulnerabilites fixed. First, like MD5 in [example1.java](CryptographicFailures/example1.java) SHA-1 is also broken, after a attack in 2017. As well, this is also fixed by switching to bcrypt. It has the same second and third vulnerabilites as [example1.java](CryptographicFailures/example1.java) having no salt or work factor. This too is fixed by bcrypt, which has a work factor and salt generation at `bcrypt.gensalt(rounds=self.ROUNDS)`. The fourth and unique vulnerability is that Python's `hashlib` will happily accept `None` or a empty string. This allows someone to log in with a blank password if upstream validation ever fails (Addresses OWASP A05).This is fixed by adding a specific check for `None` and empty strings, ensuring a bad upstream call results in a `ValueError` rather then a unsafe hash.
+
+### Injection
+
+#### [5.](Injection/example1.java)
+
+Four vulnerabilites are fixed. First, username is spliced right into the query string. Following OWASP A03, this is a textbook injection, and a attacker could easily bypass auth, destroy data, etc. This is fixed with the `?` placeholder, which is compiled into the query before the value is ever supplied, treating the input as data, not code. The second vulnerability is that there is no type check on `request.getParameter()`, so whatever someone sends gets returned. This is fixed by adding different validation guards which check for null, blank strings, and add a max length (Addresses OWASP A05). The third vulnerability is that `Statement` is used instead of `PreparedStatement`. `Statement` has no concept of paraments or placeholders, and using it forces string concatenation, which is the root of SQL injection. This is fixed by switching to using `PreparedStatement` which pre compiles the query with placeholders and binds values seperately with `setString()` (Addresses OWAP A03). The fourth and last vulnerability is `SELECT *`, which returns every column, including passwords, tokens, hashes, etc, regardless of what the caller needs. This is fixed by naming only each column needed `SELECT id, username, email,` so sensitive fields like passwords and tokens are never fetched unless requested(Addresses OWASP A05).
+
+#### [6.](Injection/example2.js)
 
